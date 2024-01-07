@@ -1,0 +1,31 @@
+plugins:
+  - - '@semantic-release/commit-analyzer'
+    - releaseRules:
+        - type: docs
+          scope: README
+          release: patch
+  - - '@semantic-release/exec'
+    - prepareCmd: npx npm install --force && npx npm run lint && npx npm run ts:check && npx npm run build
+  - '@semantic-release/release-notes-generator'
+  - - '@semantic-release/changelog'
+    - changelogFile: CHANGELOG.md
+  - - '@semantic-release/npm'
+    - pkgRoot: dist/libs/@cf-workers/turnstile-injection
+      tarballDir: tmp
+      npmPublish: false
+  - - '@semantic-release/github'
+    - assets:
+        - tmp/*.tgz
+      successComment: >-
+        [v${nextRelease.version}](https://github.com/help-me-mom/cf-workers-turnstile-injection/releases/tag/v${nextRelease.version})
+        has been released and contains a fix for the issue.
+        Feel free to reopen the issue or to submit a new one if you meet any problems.
+      failTitle: false
+      failComment: false
+      labels: false
+      releasedLabels:
+        - released
+        - >-
+          v${nextRelease.version}
+  - - '@semantic-release/git'
+    - message: 'chore(release): v${nextRelease.version}'

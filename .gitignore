@@ -1,0 +1,7 @@
+/.env
+/dist
+/node_modules
+/test-reports
+/tests-e2e/.wrangler
+/tests-e2e/node_modules
+/tests-e2e/wrangler.toml

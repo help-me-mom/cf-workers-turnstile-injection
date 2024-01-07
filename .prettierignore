@@ -1,0 +1,17 @@
+.dockerignore
+.editorconfig
+.eslintignore
+.gitignore
+.prettierignore
+CHANGELOG.md
+CODEOWNERS
+LICENSE
+renovate.json
+
+.husky/
+dist/
+node_modules/
+test-reports/
+
+**/*.sh
+**/.nvmrc

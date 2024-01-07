@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.build.cjs.json",
+  "compilerOptions": {
+    "experimentalDecorators": true
+  },
+  "include": ["./src/**/*.ts"]
+}

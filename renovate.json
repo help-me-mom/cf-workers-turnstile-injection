@@ -1,0 +1,32 @@
+{
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(chore)"
+  ],
+  "baseBranches": ["main"],
+  "dependencyDashboard": false,
+  "prConcurrentLimit": 0,
+  "prHourlyLimit": 0,
+  "rangeStrategy": "pin",
+  "rebaseWhen": "conflicted",
+  "separateMajorMinor": true,
+  "separateMinorPatch": true,
+  "separateMultipleMajor": true,
+  "forkProcessing": "disabled",
+  "ignoreDeprecated": false,
+  "configMigration": true,
+  "semanticCommitScope": "{{#if (equals packageFileDir '')}}root{{else}}{{{packageFileDir}}}{{/if}}",
+  "additionalBranchPrefix": "{{#if (equals packageFileDir '')}}root{{else}}{{{packageFileDir}}}{{/if}}/",
+  "branchTopic": "{{{depNameSanitized}}}-{{{newMajor}}}.{{{newMinor}}}.x",
+  "vulnerabilityAlerts": {
+    "enabled": false
+  },
+  "hostRules": [
+    {
+      "matchHost": "docker.io",
+      "username": "satantime",
+      "password": "dckr_pat_aLRNk3vH9pYc1EtJgrHdOntl4Fs"
+    }
+  ]
+}

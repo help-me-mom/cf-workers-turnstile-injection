@@ -1,0 +1,205 @@
+root: true
+
+plugins:
+  - '@typescript-eslint'
+  - 'json'
+  - 'unused-imports'
+  - 'prefer-arrow'
+  - 'unicorn'
+  - 'es-roikoren'
+
+settings:
+  import/resolver:
+    webpack:
+      config: ./webpack.config.js
+    typescript:
+      project:
+        - ./tsconfig.json
+        - ./tsconfig.spec.json
+        - ./tests-e2e/tsconfig.json
+  es-roikoren:
+    aggressive: true
+
+overrides:
+  - files:
+      - '*.ts'
+      - '*.js'
+    parser: '@typescript-eslint/parser'
+    parserOptions:
+      project:
+        - ./tsconfig.json
+        - ./tsconfig.spec.json
+        - ./tests-e2e/tsconfig.json
+    extends:
+      - 'eslint:recommended'
+      - 'plugin:@typescript-eslint/recommended'
+      - 'plugin:unicorn/recommended'
+      - 'plugin:import/recommended'
+      - 'plugin:import/typescript'
+      - 'plugin:prettier/recommended'
+    rules:
+      arrow-parens: off
+      arrow-body-style: off
+      spaced-comment:
+        - error
+        - always
+      complexity:
+        - error
+        - 50
+      unicorn/filename-case:
+        - error
+        - case: kebabCase
+      max-lines:
+        - error
+        - 500
+      max-lines-per-function:
+        - error
+        - 150
+
+      '@typescript-eslint/no-empty-interface': off
+      '@typescript-eslint/no-explicit-any': off
+      '@typescript-eslint/no-namespace': off
+      '@typescript-eslint/no-this-alias': off
+      '@typescript-eslint/no-unsafe-declaration-merging': off
+      '@typescript-eslint/no-unused-vars': error
+
+      unicorn/expiring-todo-comments: off
+      unicorn/no-array-callback-reference: off
+      unicorn/no-array-method-this-argument: off
+      unicorn/no-for-loop: off
+      unicorn/no-null: off
+      unicorn/no-this-assignment: off
+      unicorn/no-typeof-undefined: off
+      unicorn/no-unnecessary-polyfills: off
+      unicorn/no-useless-undefined: off
+      unicorn/prefer-array-flat: off
+      unicorn/prefer-at: off
+      unicorn/prefer-dom-node-append: off
+      unicorn/prefer-event-target: off
+      unicorn/prefer-includes: off
+      unicorn/prefer-module: off
+      unicorn/prefer-set-has: off
+      unicorn/prefer-spread: off
+      unicorn/prefer-string-replace-all: off
+      unicorn/prefer-switch: off
+      unicorn/prefer-top-level-await: off
+      unicorn/prefer-type-error: off
+      unicorn/prevent-abbreviations: off
+
+      es-roikoren/no-array-from: error
+      es-roikoren/no-array-isarray: off
+      es-roikoren/no-array-of: error
+      es-roikoren/no-array-prototype-copywithin: error
+      es-roikoren/no-array-prototype-entries: error
+      es-roikoren/no-array-prototype-every: error
+      es-roikoren/no-array-prototype-fill: off
+      es-roikoren/no-array-prototype-filter: off
+      es-roikoren/no-array-prototype-find: error
+      es-roikoren/no-array-prototype-findindex: error
+      es-roikoren/no-array-prototype-flat: error
+      es-roikoren/no-array-prototype-foreach: error
+      es-roikoren/no-array-prototype-includes: error
+      es-roikoren/no-array-prototype-indexof: off
+      es-roikoren/no-array-prototype-keys: error
+      es-roikoren/no-array-prototype-lastindexof: error
+      es-roikoren/no-array-prototype-map: off
+      es-roikoren/no-array-prototype-reduce: error
+      es-roikoren/no-array-prototype-reduceright: error
+      es-roikoren/no-array-prototype-some: off
+      es-roikoren/no-array-prototype-values: error
+      es-roikoren/no-array-string-prototype-at: error
+
+      no-alert: error
+      no-console:
+        - error
+        - allow:
+            - error
+            - warn
+      no-debugger: error
+      no-restricted-globals:
+        - error
+        - fit
+        - fdescribe
+        - xit
+        - xdescribe
+      semi:
+        - error
+        - always
+      quotes:
+        - error
+        - single
+        - avoidEscape: true
+          allowTemplateLiterals: true
+      import/order:
+        - error
+        - newlines-between: always
+          alphabetize:
+            order: asc
+            caseInsensitive: true
+          groups:
+            - builtin
+            - external
+            - internal
+            - index
+            - parent
+            - sibling
+      unused-imports/no-unused-imports: error
+      prefer-arrow/prefer-arrow-functions:
+        - error
+        - allowStandaloneDeclarations: true
+
+  - files:
+      - '*.spec.ts'
+    rules:
+      max-lines: off
+      max-lines-per-function: off
+      unicorn/consistent-function-scoping: off
+      unicorn/prefer-logical-operator-over-ternary: off
+      '@typescript-eslint/no-empty-function': off
+
+  - files:
+      - '*.js'
+    parser: 'espree'
+    env:
+      node: true
+    rules:
+      unicorn/prefer-module: off
+
+  - files:
+      - 'webpack.config.js'
+    rules:
+      '@typescript-eslint/no-var-requires': off
+      'prefer-arrow/prefer-arrow-functions': off
+
+  - files:
+      - '*.json'
+    extends:
+      - 'plugin:json/recommended'
+      - 'plugin:prettier/recommended'
+
+  - files:
+      - '*.md'
+    extends:
+      - 'plugin:mdx/recommended'
+      - 'plugin:prettier/recommended'
+
+  - files:
+      - 'tsconfig.json'
+      - 'tsconfig.*.json'
+    extends:
+      - 'plugin:json/recommended-with-comments'
+      - 'plugin:prettier/recommended'
+
+  - files:
+      - '*.yaml'
+      - '*.yml'
+    parser: 'yaml-eslint-parser'
+    extends:
+      - 'plugin:yml/prettier'
+      - 'plugin:prettier/recommended'
+
+  - files:
+      - '*.toml'
+    parser: 'toml-eslint-parser'
+    extends:
+      - 'plugin:toml/standard'
