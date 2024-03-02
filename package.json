@@ -24,7 +24,7 @@
     "@semantic-release/exec": "6.0.3",
     "@semantic-release/git": "10.0.1",
     "@semantic-release/github": "9.2.6",
-    "@semantic-release/npm": "11.0.2",
+    "@semantic-release/npm": "11.0.3",
     "@types/jasmine": "5.1.4",
     "@types/node": "20.10.7",
     "@typescript-eslint/eslint-plugin": "6.18.1",
