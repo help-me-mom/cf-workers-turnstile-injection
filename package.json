@@ -17,7 +17,7 @@
     "ts:check": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "4.20240821.1",
+    "@cloudflare/workers-types": "4.20250312.0",
     "@commitlint/cli": "19.4.0",
     "@commitlint/config-conventional": "19.2.2",
     "@semantic-release/changelog": "6.0.3",
