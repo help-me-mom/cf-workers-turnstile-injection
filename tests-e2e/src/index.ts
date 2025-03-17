@@ -10,6 +10,7 @@
 import cfTurnstileInjection from '@cf-workers/turnstile-injection';
 import type { CfWorkersTurnstileInjectionEnv } from '@cf-workers/turnstile-injection';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface Env extends CfWorkersTurnstileInjectionEnv {
   // Example binding to KV. Learn more at https://developers.cloudflare.com/workers/runtime-apis/kv/
   // MY_KV_NAMESPACE: KVNamespace;

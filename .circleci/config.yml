@@ -1,0 +1,75 @@
+version: 2.1
+
+parameters:
+  lockindex:
+    type: string
+    default: '1'
+
+executors:
+  core:
+    docker:
+      - image: satantime/puppeteer-node:22.14.0
+    resource_class: medium
+
+jobs:
+  Core:
+    executor: core
+    steps:
+      - checkout
+      - restore_cache:
+          key: root-<< pipeline.parameters.lockindex >>-{{ arch }}-{{ checksum "package.json" }}-{{ checksum "package-lock.json" }}
+      - run:
+          name: NPM Install
+          command: |
+            md5sum package-lock.json > package.md5
+            if [ ! -d "./node_modules/" ]; then
+              npm ci
+            fi
+            md5sum -c package.md5
+            rm package.md5
+      - save_cache:
+          key: root-<< pipeline.parameters.lockindex >>-{{ arch }}-{{ checksum "package.json" }}-{{ checksum "package-lock.json" }}
+          paths:
+            - ./node_modules
+            - ~/.cache/puppeteer
+      - run:
+          name: Build
+          command: |
+            npm run build
+            cd ./dist/libs/@cf-workers/turnstile-injection
+            npm pack
+            cd ..
+            mv ./turnstile-injection/cf-workers-turnstile-injection-0.0.0.tgz ./
+            rm -Rf ./turnstile-injection
+            tar -xf ./cf-workers-turnstile-injection-0.0.0.tgz package
+            rm ./cf-workers-turnstile-injection-0.0.0.tgz
+            mv ./package ./turnstile-injection
+      - run:
+          name: Prettier
+          command: npm run prettier:check
+      - run:
+          name: Lint commits
+          command: npx commitlint -V --from=origin/main
+      - run:
+          name: Lint code style
+          command: npm run lint
+      - run:
+          name: Lint typescript
+          command: npm run ts:check
+      - run:
+          name: Release
+          command: npx semantic-release -h
+      - persist_to_workspace:
+          root: dist
+          paths:
+            - .
+
+workflows:
+  version: 2
+  Testing:
+    jobs:
+      - Core:
+          name: core
+          filters:
+            tags:
+              only: /.*/
