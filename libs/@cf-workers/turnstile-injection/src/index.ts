@@ -164,6 +164,33 @@ export default {
 
     const responseOriginal = await fetch(originRequest as RequestInfo);
     const response = new Response(responseOriginal.body, responseOriginal);
+    if (response.headers.has('content-security-policy')) {
+      const csp: Array<string> = [];
+      let setScriptSrc = true;
+      let setFrameSrc = true;
+      for (const option of (response.headers.get('content-security-policy') ?? '').split(/[,;]\s*/)) {
+        if (option.startsWith('script-src ') && !option.includes(' https://challenges.cloudflare.com')) {
+          csp.push(option.trim().concat(' https://challenges.cloudflare.com'));
+          setScriptSrc = false;
+        } else if (option.startsWith('frame-src ') && !option.includes(' https://challenges.cloudflare.com')) {
+          csp.push(option.trim().concat(' https://challenges.cloudflare.com'));
+          setFrameSrc = false;
+        } else if (option.startsWith('connect-src: ') && !option.includes(` 'self'`)) {
+          csp.push(option.trim().concat(` 'self'`));
+        } else if (option.trim().length > 0) {
+          csp.push(option.trim());
+        }
+      }
+      if (setScriptSrc) {
+        csp.push(`script-src 'self' https://challenges.cloudflare.com`);
+        setScriptSrc = false;
+      }
+      if (setFrameSrc) {
+        csp.push(`frame-src 'self' https://challenges.cloudflare.com`);
+        setFrameSrc = false;
+      }
+      response.headers.set('Content-Security-Policy', csp.join('; '));
+    }
     if (
       fieldName &&
       env.TURNSTILE_SITE_KEY &&
