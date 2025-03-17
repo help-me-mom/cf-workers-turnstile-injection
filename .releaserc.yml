@@ -1,5 +1,7 @@
-branches:
-  - main
+repositoryUrl: git@github.com:help-me-mom/cf-workers-turnstile-injection.git
+dryRun: true
+ci: false
+debug: true
 plugins:
   - - '@semantic-release/commit-analyzer'
     - releaseRules:
