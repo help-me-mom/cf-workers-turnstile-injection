@@ -10,6 +10,8 @@
   "prHourlyLimit": 0,
   "rangeStrategy": "pin",
   "rebaseWhen": "conflicted",
+  "autoApprove": true,
+  "automerge": true,
   "separateMajorMinor": true,
   "separateMinorPatch": true,
   "separateMultipleMajor": true,
@@ -27,6 +29,39 @@
       "matchHost": "docker.io",
       "username": "satantime",
       "password": "dckr_pat_aLRNk3vH9pYc1EtJgrHdOntl4Fs"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchFileNames": ["libs/@cf-workers/turnstile-injection/package.json"],
+      "enabled": false
+    },
+    {
+      "matchPackageNames": ["@cf-workers/turnstile-injection"],
+      "enabled": false
+    },
+    {
+      "matchPackageNames": [
+        "satantime/puppeteer-node",
+        "@types/node",
+        "nodejs/node"
+      ],
+      "allowedVersions": "/^[^0-9]*\\d*[02468]\\./",
+      "branchTopic": "node-{{{newMajor}}}{{#if separateMinorPatch}}{{#if isPatch}}.{{{newMinor}}}{{/if}}{{/if}}.x{{#if isLockfileUpdate}}-lockfile{{/if}}"
+    },
+    {
+      "matchPackageNames": [
+        "@types/jasmine",
+        "jasmine-core"
+      ],
+      "branchTopic": "jasmine-{{{newMajor}}}{{#if separateMinorPatch}}{{#if isPatch}}.{{{newMinor}}}{{/if}}{{/if}}.x{{#if isLockfileUpdate}}-lockfile{{/if}}"
+    },
+    {
+      "matchFileNames": [
+        ".circleci/config.yml"
+      ],
+      "semanticCommitScope": "root",
+      "additionalBranchPrefix": "root/"
     }
   ]
 }
