@@ -102,7 +102,7 @@ export default {
       });
     }
 
-    const originRequest = new Request(request.clone());
+    const originRequest = new Request(request.clone() as RequestInfo);
 
     // removing system headers
     originRequest.headers.delete('X-Turnstile-Success');
@@ -115,7 +115,6 @@ export default {
       env.TURNSTILE_SECRET_KEY &&
       matchUrls(request.url, backends)
     ) {
-      request.url;
       try {
         const outcome = await verifyTurnstileValue(
           env.TURNSTILE_SECRET_KEY,
@@ -163,7 +162,8 @@ export default {
 
     ctx.waitUntil(Promise.resolve());
 
-    const response = await fetch(originRequest);
+    const responseOriginal = await fetch(originRequest as RequestInfo);
+    const response = new Response(responseOriginal.body, responseOriginal);
     if (
       fieldName &&
       env.TURNSTILE_SITE_KEY &&

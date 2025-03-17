@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "npm": "npm",
-    "postinstall": "husky install",
+    "prepare": "husky",
     "release": "export $(cat .env) && semantic-release",
     "build": "npm run clean && npm run build:webpack && npm run build:types && cp CHANGELOG.md dist/libs/@cf-workers/turnstile-injection && cp README.md dist/libs/@cf-workers/turnstile-injection && cp LICENSE dist/libs/@cf-workers/turnstile-injection && cp libs/@cf-workers/turnstile-injection/package.json dist/libs/@cf-workers/turnstile-injection/package.json && cp tests/test.spec.ts dist/libs/@cf-workers/turnstile-injection/example.spec.ts",
     "build:dev": "MODE=development npm run build",
@@ -36,7 +36,7 @@
     "eslint-import-resolver-webpack": "0.13.10",
     "eslint-plugin-es-roikoren": "3.0.0",
     "eslint-plugin-import": "2.31.0",
-    "eslint-plugin-json": "4.0.1",
+    "eslint-plugin-json": "3.1.0",
     "eslint-plugin-mdx": "3.2.0",
     "eslint-plugin-prefer-arrow": "1.2.3",
     "eslint-plugin-prettier": "5.2.3",
