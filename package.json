@@ -9,7 +9,7 @@
     "build:dev": "MODE=development npm run build",
     "build:webpack": "webpack",
     "build:types": "dts-bundle-generator --no-banner -o ./dist/libs/@cf-workers/turnstile-injection/index.d.ts --project ./libs/@cf-workers/turnstile-injection/tsconfig.build.cjs.json --no-check --export-referenced-types=true ./libs/@cf-workers/turnstile-injection/src/index.ts",
-    "clean": "rm -rf dist test-reports",
+    "clean": "rm -rf dist test-reports tmp",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prettier:repo": "prettier -u -w .",
