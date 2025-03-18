@@ -1,3 +1,4 @@
+!.releaserc.yml
 .dockerignore
 .editorconfig
 .eslintignore

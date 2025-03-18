@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const path = require('node:path');
 
+const { DefinePlugin } = require('webpack');
+
+const variables = {
+  WEBPACK_BUILD_VERSION: JSON.stringify(process.env.BUILD_VERSION || '0.0.0'),
+};
+
 module.exports = [
   {
     mode: process.env.MODE || 'production',
@@ -15,6 +21,7 @@ module.exports = [
       },
       globalObject: 'this',
     },
+    plugins: [new DefinePlugin(variables)],
     module: {
       rules: [
         {
@@ -51,6 +58,7 @@ module.exports = [
       },
       globalObject: 'this',
     },
+    plugins: [new DefinePlugin(variables)],
     module: {
       rules: [
         {
