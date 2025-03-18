@@ -83,11 +83,13 @@ export default {
       console.error(`TURNSTILE_SECRET_KEY is missing`);
     }
 
+    const envTurnstileInline = env.TURNSTILE_INLINE !== 'no';
+    const nonce = crypto.randomUUID();
     const headHandler = new TurnstileHeadHandler(env.TURNSTILE_RANDOM ?? '');
     const turnstileHandler = new TurnstileBodyHandler(
       env.TURNSTILE_SITE_KEY,
       fieldName,
-      !!env.TURNSTILE_INLINE,
+      envTurnstileInline ? nonce : undefined,
       env.TURNSTILE_RANDOM ?? '',
       env.TURNSTILE_BACKENDS ?? '',
     );
@@ -166,28 +168,70 @@ export default {
     const response = new Response(responseOriginal.body, responseOriginal);
     if (response.headers.has('content-security-policy')) {
       const csp: Array<string> = [];
-      let setScriptSrc = true;
-      let setFrameSrc = true;
+      const cspMap: Record<string, string> = {};
       for (const option of (response.headers.get('content-security-policy') ?? '').split(/[,;]\s*/)) {
-        if (option.startsWith('script-src ') && !option.includes(' https://challenges.cloudflare.com')) {
-          csp.push(option.trim().concat(' https://challenges.cloudflare.com'));
-          setScriptSrc = false;
-        } else if (option.startsWith('frame-src ') && !option.includes(' https://challenges.cloudflare.com')) {
-          csp.push(option.trim().concat(' https://challenges.cloudflare.com'));
-          setFrameSrc = false;
-        } else if (option.startsWith('connect-src: ') && !option.includes(` 'self'`)) {
-          csp.push(option.trim().concat(` 'self'`));
-        } else if (option.trim().length > 0) {
-          csp.push(option.trim());
+        if (option.trim().length === 0) {
+          continue;
+        }
+        const [directive, ...rest] = option.trim().split(' ');
+        const value = rest.join(' ');
+        if (cspMap[directive] === undefined) {
+          csp.push(directive);
+        }
+        cspMap[directive] = (cspMap[directive] ?? '').concat(' ', (value ?? '').trim()).trim();
+      }
+      {
+        let scriptSrc = cspMap['script-src'] ?? cspMap['default-src'] ?? '';
+        if (!scriptSrc.includes('https://challenges.cloudflare.com')) {
+          scriptSrc = scriptSrc.concat(' https://challenges.cloudflare.com').trim();
+          if (cspMap['script-src'] === undefined) {
+            csp.push('script-src');
+          }
+          cspMap['script-src'] = scriptSrc;
         }
       }
-      if (setScriptSrc) {
-        csp.push(`script-src 'self' https://challenges.cloudflare.com`);
-        setScriptSrc = false;
+      {
+        let frameSrc = cspMap['frame-src'] ?? cspMap['default-src'] ?? '';
+        if (!frameSrc.includes('https://challenges.cloudflare.com')) {
+          frameSrc = frameSrc.concat(' https://challenges.cloudflare.com').trim();
+          if (cspMap['frame-src'] === undefined) {
+            csp.push('frame-src');
+          }
+          cspMap['frame-src'] = frameSrc;
+        }
       }
-      if (setFrameSrc) {
-        csp.push(`frame-src 'self' https://challenges.cloudflare.com`);
-        setFrameSrc = false;
+      {
+        let connectSrc = cspMap['connect-src'] ?? cspMap['default-src'] ?? '';
+        if (!connectSrc.includes(`'self'`)) {
+          connectSrc = connectSrc.concat(` 'self'`).trim();
+          if (cspMap['connect-src'] === undefined) {
+            csp.push('connect-src');
+          }
+          cspMap['connect-src'] = connectSrc;
+        }
+      }
+      {
+        if (envTurnstileInline && !(cspMap['script-src'] ?? '').includes(`'nonce-${nonce}'`)) {
+          const scriptSrc = (cspMap['script-src'] ?? cspMap['default-src'] ?? '').concat(` 'nonce-${nonce}'`).trim();
+          if (cspMap['script-src'] === undefined) {
+            csp.push('script-src');
+          }
+          cspMap['script-src'] = scriptSrc;
+        }
+      }
+      {
+        if (!envTurnstileInline && !(cspMap['script-src'] ?? cspMap['default-src'] ?? '').includes(`'self'`)) {
+          const scriptSrc = (cspMap['script-src'] ?? cspMap['default-src'] ?? '').concat(` 'self'`).trim();
+          if (cspMap['script-src'] === undefined) {
+            csp.push('script-src');
+          }
+          cspMap['script-src'] = scriptSrc;
+        }
+      }
+
+      for (let cspIndex = 0; cspIndex < csp.length; cspIndex += 1) {
+        const directive = csp[cspIndex];
+        csp[cspIndex] = `${directive} ${cspMap[directive]}`;
       }
       response.headers.set('Content-Security-Policy', csp.join('; '));
     }
