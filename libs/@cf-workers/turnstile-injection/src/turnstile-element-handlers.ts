@@ -2,6 +2,8 @@
 // @ts-ignore
 import frontendTsScript from '!!raw-loader!ts-loader?configFile=tsconfig.build.web.json!./frontend';
 
+declare const WEBPACK_BUILD_VERSION: string;
+
 export class TurnstileHeadHandler implements HTMLRewriterElementContentHandlers {
   private processed = false;
 
@@ -73,7 +75,7 @@ export class TurnstileBodyHandler implements HTMLRewriterElementContentHandlers 
 
     element.append(
       `
-				<script type="application/javascript"${this.inline ? '' : ' async src="/cftsc.js?v=0.0.0"'}>${
+				<script type="application/javascript"${this.inline ? '' : ` async src="/cftsc.js?v=${WEBPACK_BUILD_VERSION}"`}>${
           this.inline ? this.script() : ''
         }</script>
 				<div id="cfc${this.random}"></div>

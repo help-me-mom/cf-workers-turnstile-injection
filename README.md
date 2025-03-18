@@ -133,9 +133,10 @@ In case, if `cfr` is used on your website already, you can change it to any othe
 
 Required: no
 
-By default, the library loads a frontend script via `/cftsc.js` on the same domain name.
-It's done for CSP (Content Security Policy), but if you want, you can set this variable to `yes`
-to inline the frontend script.
+By default, the library injects a frontend script via inline code with CSP `script-src 'nonce'` policy.
+
+If you prefer to load it via file inclusion, you can set `TURNSTILE_INLINE=no`,
+and the script will load `/cftsc.js` on the same domain name with CSP `script-src 'self'` policy.
 
 #### TURNSTILE_RANDOM
 
@@ -220,7 +221,22 @@ Another example, if your frontend is on `www.example.com` and your backend is on
 - "Zone" should be `example.com`
 - click "Add route" to save it
 - click "Add route" to add a route
-- "Route" should be api.example.com/\*`
+- "Route" should be `api.example.com/*`
+- "Zone" should be `example.com`
+- click "Add route" to save it
+
+If you want to be very precise and load the script on specific pages and api endpoints:
+
+- click "Add route" to add a route
+- "Route" should be `www.example.com/cftsc.js*`
+- "Zone" should be `example.com`
+- click "Add route" to save it
+- click "Add route" to add a route
+- "Route" should be `www.example.com/login-page`
+- "Zone" should be `example.com`
+- click "Add route" to save it
+- click "Add route" to add a route
+- "Route" should be `api.example.com/v2/auth/login`
 - "Zone" should be `example.com`
 - click "Add route" to save it
 
