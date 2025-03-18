@@ -30,7 +30,7 @@ export class TurnstileBodyHandler implements HTMLRewriterElementContentHandlers 
   constructor(
     public readonly siteKey: string | undefined,
     public readonly fieldName = 'cfr',
-    public readonly inline = false,
+    public readonly inlineNonce: string | undefined = undefined,
     public readonly random: string,
     public readonly hosts: string,
   ) {}
@@ -75,8 +75,8 @@ export class TurnstileBodyHandler implements HTMLRewriterElementContentHandlers 
 
     element.append(
       `
-				<script type="application/javascript"${this.inline ? '' : ` async src="/cftsc.js?v=${WEBPACK_BUILD_VERSION}"`}>${
-          this.inline ? this.script() : ''
+				<script type="application/javascript"${this.inlineNonce ? ` nonce="${this.inlineNonce}"` : ` async src="/cftsc.js?v=${WEBPACK_BUILD_VERSION}"`}>${
+          this.inlineNonce ? this.script() : ''
         }</script>
 				<div id="cfc${this.random}"></div>
 			`

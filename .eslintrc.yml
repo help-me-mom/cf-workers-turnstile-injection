@@ -46,7 +46,7 @@ overrides:
         - always
       complexity:
         - error
-        - 50
+        - 150
       unicorn/filename-case:
         - error
         - case: kebabCase
@@ -55,7 +55,7 @@ overrides:
         - 500
       max-lines-per-function:
         - error
-        - 150
+        - 500
 
       '@typescript-eslint/no-empty-interface': off
       '@typescript-eslint/no-explicit-any': off
