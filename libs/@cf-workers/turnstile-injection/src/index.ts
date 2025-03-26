@@ -34,6 +34,7 @@ export interface CfWorkersTurnstileInjectionEnv {
   TURNSTILE_ACTION: string | undefined;
   TURNSTILE_FRONTENDS: string | undefined;
   TURNSTILE_BACKENDS: string | undefined;
+  TURNSTILE_LENIENCY: string | undefined;
 }
 
 const matchUrls = (url: string, hosts: Array<string>): boolean => {
@@ -121,9 +122,11 @@ export default {
         const outcome = await verifyTurnstileValue(
           env.TURNSTILE_SECRET_KEY,
           await parseTurnstileValue(request, fieldName),
-          request.headers.get('CF-Connecting-IP') ?? '',
-          '',
-          env.TURNSTILE_FRONTENDS,
+          request.headers.get('cf-connecting-ip') ?? '',
+          env.TURNSTILE_FRONTENDS ?? '',
+          {
+            leniency: env.TURNSTILE_LENIENCY as never,
+          },
         );
         originRequest.headers.set('X-Turnstile-Data', JSON.stringify(outcome));
         if (outcome && outcome.success) {
