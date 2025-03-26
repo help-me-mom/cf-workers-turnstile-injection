@@ -73,32 +73,44 @@ const validateHost = (hostname: undefined | string, hosts: string): boolean => {
 
 export const verifyTurnstileValue = async (
   secretKey: string,
-  token: string,
+  captchaResponse: string,
   remoteIp: string,
-  idempotencyKey: string,
-  hosts = '',
+  hosts: string,
+  options?: {
+    idempotencyKey?: string;
+    leniency?: 'strict' | 'relaxed' | 'off';
+  },
 ): Promise<TurnstileVerification> => {
-  if (!token || !secretKey) {
+  if (!captchaResponse || !secretKey) {
     return undefined;
   }
 
   const formData = new FormData();
   formData.append('secret', secretKey);
-  formData.append('response', token);
+  formData.append('response', captchaResponse);
   formData.append('remoteip', remoteIp);
-  if (idempotencyKey) {
-    formData.append('idempotency_key', idempotencyKey);
+  if (options?.leniency) {
+    formData.append('remoteip_leniency', options.leniency);
+  }
+  if (options?.idempotencyKey) {
+    formData.append('idempotency_key', options.idempotencyKey);
   }
   try {
-    const result = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    console.error('verifyTurnstileValue:formData', {
+      token: captchaResponse,
+      remoteIp,
+      options,
+    });
+    const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       body: formData,
       method: 'POST',
     });
 
-    const data = await result.json<TurnstileVerification>();
-    if (data && data.success) {
-      return validateHost(data.hostname, hosts)
-        ? data
+    const result = await response.json<TurnstileVerification>();
+    console.error('verifyTurnstileValue:result', result);
+    if (result && result.success) {
+      return validateHost(result.hostname, hosts)
+        ? result
         : {
             success: false,
             'error-codes': ['bad-request'],
@@ -106,7 +118,7 @@ export const verifyTurnstileValue = async (
           };
     }
 
-    return data;
+    return result;
   } catch {
     return undefined;
   }
