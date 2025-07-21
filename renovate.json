@@ -1,10 +1,6 @@
 {
-  "extends": [
-    "config:recommended",
-    ":semanticCommits",
-    ":semanticCommitTypeAll(chore)"
-  ],
-  "baseBranches": ["main"],
+  "extends": ["config:recommended", ":semanticCommits", ":semanticCommitTypeAll(chore)"],
+  "baseBranchPatterns": ["main"],
   "dependencyDashboard": false,
   "prConcurrentLimit": 0,
   "prHourlyLimit": 0,
@@ -34,25 +30,16 @@
       "enabled": false
     },
     {
-      "matchPackageNames": [
-        "satantime/puppeteer-node",
-        "@types/node",
-        "nodejs/node"
-      ],
+      "matchPackageNames": ["satantime/puppeteer-node", "@types/node", "nodejs/node"],
       "allowedVersions": "/^[^0-9]*\\d*[02468]\\./",
       "branchTopic": "node-{{{newMajor}}}{{#if separateMinorPatch}}{{#if isPatch}}.{{{newMinor}}}{{/if}}{{/if}}.x{{#if isLockfileUpdate}}-lockfile{{/if}}"
     },
     {
-      "matchPackageNames": [
-        "@types/jasmine",
-        "jasmine-core"
-      ],
+      "matchPackageNames": ["@types/jasmine", "jasmine-core"],
       "branchTopic": "jasmine-{{{newMajor}}}{{#if separateMinorPatch}}{{#if isPatch}}.{{{newMinor}}}{{/if}}{{/if}}.x{{#if isLockfileUpdate}}-lockfile{{/if}}"
     },
     {
-      "matchFileNames": [
-        ".circleci/config.yml"
-      ],
+      "matchFileNames": [".circleci/config.yml"],
       "semanticCommitScope": "root",
       "additionalBranchPrefix": "root/"
     }
