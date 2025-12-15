@@ -43,7 +43,7 @@
     "eslint-plugin-toml": "0.12.0",
     "eslint-plugin-unicorn": "56.0.1",
     "eslint-plugin-unused-imports": "4.3.0",
-    "eslint-plugin-yml": "1.19.0",
+    "eslint-plugin-yml": "1.19.1",
     "husky": "9.1.7",
     "lint-staged": "16.2.7",
     "npm": "11.7.0",
