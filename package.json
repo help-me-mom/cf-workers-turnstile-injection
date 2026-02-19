@@ -46,7 +46,7 @@
     "eslint-plugin-yml": "1.19.1",
     "husky": "9.1.7",
     "lint-staged": "16.2.7",
-    "npm": "11.10.0",
+    "npm": "11.10.1",
     "prettier": "3.6.2",
     "prettier-plugin-toml": "2.0.6",
     "raw-loader": "4.0.2",
@@ -57,7 +57,7 @@
     "webpack-cli": "6.0.1"
   },
   "engines": {
-    "npm": "11.10.0"
+    "npm": "11.10.1"
   },
   "repository": {
     "type": "git",
