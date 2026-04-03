@@ -26,7 +26,7 @@
     "@semantic-release/github": "12.0.6",
     "@semantic-release/npm": "13.1.5",
     "@types/jasmine": "6.0.0",
-    "@types/node": "24.12.0",
+    "@types/node": "24.12.2",
     "@typescript-eslint/eslint-plugin": "8.58.0",
     "@typescript-eslint/parser": "8.58.0",
     "dts-bundle-generator": "9.5.1",
