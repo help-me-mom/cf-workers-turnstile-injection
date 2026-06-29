@@ -53,7 +53,7 @@
     "semantic-release": "25.0.5",
     "ts-loader": "9.6.2",
     "typescript": "5.9.3",
-    "webpack": "5.108.1",
+    "webpack": "5.108.2",
     "webpack-cli": "7.1.0"
   },
   "engines": {
