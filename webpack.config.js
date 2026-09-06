@@ -7,6 +7,39 @@ const variables = {
   WEBPACK_BUILD_VERSION: JSON.stringify(process.env.BUILD_VERSION || '0.0.0'),
 };
 
+const createTypescriptRules = configFile => [
+  {
+    test: /\.tsx?$/,
+    oneOf: [
+      {
+        resourceQuery: /^\?raw$/,
+        type: 'asset/source',
+        use: [
+          path.resolve(__dirname, './scripts/minify-frontend-loader.mjs'),
+          {
+            loader: 'ts-loader',
+            options: {
+              configFile: path.resolve(__dirname, './libs/@cf-workers/turnstile-injection/tsconfig.build.web.json'),
+              transpileOnly: true,
+            },
+          },
+        ],
+      },
+      {
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              configFile: path.resolve(__dirname, configFile),
+              transpileOnly: true,
+            },
+          },
+        ],
+      },
+    ],
+  },
+];
+
 module.exports = [
   {
     mode: process.env.MODE || 'production',
@@ -23,20 +56,7 @@ module.exports = [
     },
     plugins: [new DefinePlugin(variables)],
     module: {
-      rules: [
-        {
-          test: /\.tsx?$/,
-          use: [
-            {
-              loader: 'ts-loader',
-              options: {
-                configFile: path.resolve(__dirname, './libs/@cf-workers/turnstile-injection/tsconfig.build.cjs.json'),
-                transpileOnly: true,
-              },
-            },
-          ],
-        },
-      ],
+      rules: createTypescriptRules('./libs/@cf-workers/turnstile-injection/tsconfig.build.cjs.json'),
     },
     resolve: {
       extensions: ['.js', '.cjs', '.mjs', '.ts', '.json'],
@@ -60,20 +80,7 @@ module.exports = [
     },
     plugins: [new DefinePlugin(variables)],
     module: {
-      rules: [
-        {
-          test: /\.tsx?$/,
-          use: [
-            {
-              loader: 'ts-loader',
-              options: {
-                configFile: path.resolve(__dirname, './libs/@cf-workers/turnstile-injection/tsconfig.build.mjs.json'),
-                transpileOnly: true,
-              },
-            },
-          ],
-        },
-      ],
+      rules: createTypescriptRules('./libs/@cf-workers/turnstile-injection/tsconfig.build.mjs.json'),
     },
     resolve: {
       extensions: ['.js', '.cjs', '.mjs', '.ts', '.json'],

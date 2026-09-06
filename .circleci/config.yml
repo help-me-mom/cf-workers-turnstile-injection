@@ -45,6 +45,9 @@ jobs:
             rm ./cf-workers-turnstile-injection-0.0.0.tgz
             mv ./package ./turnstile-injection
       - run:
+          name: Frontend build compatibility
+          command: npm run test:frontend
+      - run:
           name: Prettier
           command: npm run prettier:check
       - run:

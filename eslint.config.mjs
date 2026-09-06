@@ -16,10 +16,6 @@ import * as espree from 'espree';
 import globals from 'globals';
 
 const projects = ['./tsconfig.json', './tsconfig.spec.json', './tests-e2e/tsconfig.json'];
-const typescriptResolver = createTypeScriptImportResolver({
-  noWarnOnMultipleProjects: true,
-  project: projects,
-});
 
 export default defineConfig([
   {
@@ -60,11 +56,10 @@ export default defineConfig([
     },
     settings: {
       'import-x/resolver-next': [
-        {
-          ...typescriptResolver,
-          // Resolve the resource after webpack's inline loader chain.
-          resolve: (source, file) => typescriptResolver.resolve(source.replace(/^.*!/, ''), file),
-        },
+        createTypeScriptImportResolver({
+          noWarnOnMultipleProjects: true,
+          project: projects,
+        }),
       ],
       'es-x': { aggressive: true },
     },
