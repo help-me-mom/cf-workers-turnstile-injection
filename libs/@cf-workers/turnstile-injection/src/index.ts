@@ -113,8 +113,8 @@ export default {
 
     // verifying turnstile
     if (
-      (request.method === 'PUT' || request.method === 'POST') &&
       fieldName &&
+      (request.method === 'PUT' || request.method === 'POST') &&
       env.TURNSTILE_SECRET_KEY &&
       isUrlMatched(request.url, backends)
     ) {
@@ -153,7 +153,7 @@ export default {
         headers,
       });
     }
-    if (originRequest.headers.get('X-Turnstile-Success') === 'no' && action === 'block') {
+    if (action === 'block' && originRequest.headers.get('X-Turnstile-Success') === 'no') {
       return new Response('Forbidden', {
         status: 403,
         headers: {

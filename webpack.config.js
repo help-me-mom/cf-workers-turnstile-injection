@@ -16,7 +16,10 @@ const variables = {
     if (errors.length > 0) {
       throw new Error(errors.map(error => ts.flattenDiagnosticMessageText(error.messageText, '\n')).join('\n'));
     }
-    const { outputText } = ts.transpileModule(ts.sys.readFile(frontendFile), { compilerOptions: options });
+    const { outputText } = ts.transpileModule(ts.sys.readFile(frontendFile), {
+      fileName: frontendFile,
+      compilerOptions: options,
+    });
     const { code } = minify(outputText, {
       ecma: 5,
       ie8: true,

@@ -12,215 +12,207 @@ declare interface Turnstile {
   reset: (widgetId: string) => void;
 }
 
+// This hook name is shared with the injected HTML and includes its random suffix.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare interface Window {
   cftshVAR_RANDOM?: Parameters<Turnstile['ready']>[0];
 }
 declare interface HTMLInputElement {
+  // Marks hidden inputs owned by this script.
   cfcVAR_RANDOM?: true;
 }
 declare interface XMLHttpRequest {
+  // Keep request metadata separate for each injected script instance.
   mVAR_RANDOM?: string;
   uVAR_RANDOM?: string | URL;
 }
 declare const turnstile: undefined | Turnstile;
 
-((c: {
-  hosts: Array<string>;
-  init?: true;
-  location?: (u: string | URL | RequestInfo | undefined) => [string, string] | [string];
-  match?: (u: string | URL | RequestInfo | undefined) => boolean;
-  patch?: <T>(d: T, u: string | URL | RequestInfo | undefined) => T;
-  handler?: TurnstileCallback;
-  ifd?: (formData: unknown) => formData is FormData;
-  d?: FormData | URLSearchParams | string;
-  w?: string;
-  t?: string;
-  fi?: number;
-  f?: HTMLFormElement;
-  i?: HTMLInputElement;
-}) => {
-  c.ifd = (formData): formData is FormData => {
+((allowedBackends: Array<string>) => {
+  let currentToken: string | undefined;
+  let widgetId: string | undefined;
+
+  const isFormData = (formData: unknown): formData is FormData => {
     return !!formData && typeof formData === 'object' && typeof (formData as any).append === 'function';
   };
-  c.location = u => {
+  const parseRequestLocation = (requestUrl: string | URL | RequestInfo | undefined): [string, string] | [string] => {
     const url =
-      typeof u === 'string'
-        ? u
-        : u && typeof u === 'object' && (u as any).url
-          ? (u as any).url
-          : u && typeof u === 'object' && (u as any).toString
-            ? (u as any).toString()
+      typeof requestUrl === 'string'
+        ? requestUrl
+        : requestUrl && typeof requestUrl === 'object' && (requestUrl as any).url
+          ? (requestUrl as any).url
+          : requestUrl && typeof requestUrl === 'object' && (requestUrl as any).toString
+            ? (requestUrl as any).toString()
             : '';
 
-    return ((result: Array<string>) => {
-      result = url.split('://', 2) as [string] | [string, string];
-      result = (result[1] || result[0] || '').split('/');
-      if (!result[0]) {
-        result[0] = location.hostname;
-      }
-      if (result.length > 2) {
-        return [result[0], result.splice(1).join('/')];
-      }
-      if (result.length === 1) {
-        return [result[0]];
-      }
+    let locationParts = url.split('://', 2) as Array<string>;
+    locationParts = (locationParts[1] || locationParts[0] || '').split('/');
+    if (!locationParts[0]) {
+      locationParts[0] = location.hostname;
+    }
+    if (locationParts.length > 2) {
+      return [locationParts[0], locationParts.splice(1).join('/')];
+    }
+    if (locationParts.length === 1) {
+      return [locationParts[0]];
+    }
 
-      return [result[0], result[1]];
-    })([]);
+    return [locationParts[0], locationParts[1]];
   };
-  c.match = u => {
-    if (c.hosts.length < 2 && !c.hosts[0]) {
+  const isBackendUrlMatched = (requestUrl: string | URL | RequestInfo | undefined): boolean => {
+    if (allowedBackends.length < 2 && !allowedBackends[0]) {
       return true;
     }
 
-    return ((l: { i?: number; v?: boolean; a?: [string] | [string, string]; e?: [string] | [string, string] }) => {
-      l.a = c.location ? c.location(u) : [''];
-      for (l.i = 0; l.i < c.hosts.length; l.i += 1) {
-        l.e = c.location ? c.location(c.hosts[l.i]) : [''];
+    const requestLocation = parseRequestLocation(requestUrl);
+    for (let backendIndex = 0; backendIndex < allowedBackends.length; backendIndex += 1) {
+      const backendLocation = parseRequestLocation(allowedBackends[backendIndex]);
 
-        l.v = true;
-        if (
-          l.v &&
-          l.a &&
-          l.e &&
-          l.e[0] &&
-          l.e[0].charAt(0) === '.' &&
-          l.a[0].indexOf(l.e[0], l.a[0].length - l.e[0].length) === -1
-        ) {
-          l.v = false;
-        }
-        if (l.v && l.a && l.e && l.e[0] && l.e[0].charAt(0) !== '.' && l.a[0] !== l.e[0]) {
-          l.v = false;
-        }
-        if (l.v && l.a && l.e && l.e[1] && (!l.a[1] || l.a[1].indexOf(l.e[1]) !== 0)) {
-          l.v = false;
-        }
-        if (l.v) {
-          return true;
-        }
+      let isMatch =
+        !backendLocation[0] ||
+        backendLocation[0].charAt(0) !== '.' ||
+        requestLocation[0].indexOf(backendLocation[0], requestLocation[0].length - backendLocation[0].length) !== -1;
+      if (
+        isMatch &&
+        backendLocation[0] &&
+        backendLocation[0].charAt(0) !== '.' &&
+        requestLocation[0] !== backendLocation[0]
+      ) {
+        isMatch = false;
       }
-
-      return false;
-    })({});
-  };
-  c.patch = (d, u) => {
-    if (typeof d === 'undefined' || !c.match || !c.match(u)) {
-      return d;
+      if (
+        isMatch &&
+        backendLocation[1] &&
+        (!requestLocation[1] || requestLocation[1].indexOf(backendLocation[1]) !== 0)
+      ) {
+        isMatch = false;
+      }
+      if (isMatch) {
+        return true;
+      }
     }
 
-    c.d = undefined;
+    return false;
+  };
+  const patchRequestBody = <T>(body: T, requestUrl: string | URL | RequestInfo | undefined): T => {
+    if (typeof body === 'undefined' || !isBackendUrlMatched(requestUrl)) {
+      return body;
+    }
+
+    let patchedBody: FormData | URLSearchParams | string | undefined;
 
     // JSON
-    if (!c.d && c.t && typeof d === 'string' && typeof JSON !== 'undefined' && d.charAt(0) === '{') {
+    if (typeof body === 'string' && typeof JSON !== 'undefined' && currentToken && body.charAt(0) === '{') {
       try {
-        (p => {
-          if (p['VAR_FIELD_NAME']) {
+        (parsedBody => {
+          if (parsedBody['VAR_FIELD_NAME']) {
             return;
           }
-          p['VAR_FIELD_NAME'] = c.t;
-          c.d = JSON.stringify(p);
-        })(JSON.parse(d));
+          parsedBody['VAR_FIELD_NAME'] = currentToken;
+          patchedBody = JSON.stringify(parsedBody);
+        })(JSON.parse(body));
       } catch {
         // nothing to do
       }
     }
 
     // query string
-    if (!c.d && c.t && typeof d === 'string' && d.charAt(0) !== '<' && d.indexOf('=') !== -1) {
-      c.d = d + '&VAR_FIELD_NAME=' + encodeURIComponent(c.t);
+    if (
+      typeof body === 'string' &&
+      !patchedBody &&
+      currentToken &&
+      body.charAt(0) !== '<' &&
+      body.indexOf('=') !== -1
+    ) {
+      patchedBody = body + '&VAR_FIELD_NAME=' + encodeURIComponent(currentToken);
     }
 
     // FormData
-    if (!c.d && c.t && c.ifd && c.ifd(d)) {
-      if (!d.get('VAR_FIELD_NAME')) {
-        d.append('VAR_FIELD_NAME', c.t);
+    if (!patchedBody && currentToken && isFormData(body)) {
+      if (!body.get('VAR_FIELD_NAME')) {
+        body.append('VAR_FIELD_NAME', currentToken);
       }
-      c.d = d;
+      patchedBody = body;
     }
 
-    if (c.d && c.w && typeof turnstile === 'object') {
-      turnstile.reset(c.w);
+    if (typeof turnstile === 'object' && patchedBody && widgetId) {
+      turnstile.reset(widgetId);
     }
 
-    return (c.d as never) || d;
+    return (patchedBody as never) || body;
   };
 
   // patching XMLHttpRequest
   if (typeof XMLHttpRequest !== 'undefined') {
-    ((realValue: XMLHttpRequest['send']) => {
-      XMLHttpRequest.prototype.send = function (d) {
-        return realValue.call(this, c.patch ? c.patch(d, this.uVAR_RANDOM) : d);
+    ((originalSend: XMLHttpRequest['send']) => {
+      XMLHttpRequest.prototype.send = function (body) {
+        return originalSend.call(this, patchRequestBody(body, this.uVAR_RANDOM));
       };
     })(XMLHttpRequest.prototype.send);
-    ((realValue: XMLHttpRequest['open']) => {
-      XMLHttpRequest.prototype.open = function (mVAR_RANDOM, uVAR_RANDOM) {
-        this.mVAR_RANDOM = mVAR_RANDOM;
-        this.uVAR_RANDOM = uVAR_RANDOM;
+    ((originalOpen: XMLHttpRequest['open']) => {
+      XMLHttpRequest.prototype.open = function (method, requestUrl) {
+        this.mVAR_RANDOM = method;
+        this.uVAR_RANDOM = requestUrl;
 
         // eslint-disable-next-line prefer-rest-params
-        return realValue.apply(this, arguments as never);
+        return originalOpen.apply(this, arguments as never);
       };
     })(XMLHttpRequest.prototype.open);
   }
 
   // patching fetch
   if (typeof fetch !== 'undefined') {
-    ((realValue: typeof fetch) => {
-      window.fetch = function (u, d) {
-        if (typeof d == 'object' && d.body && c.patch) {
-          d.body = c.patch(d.body, u);
+    ((originalFetch: typeof fetch) => {
+      window.fetch = function (requestUrl, options) {
+        if (typeof options == 'object' && options.body) {
+          options.body = patchRequestBody(options.body, requestUrl);
         }
-        return realValue.apply(this, [u, d] as never);
+        return originalFetch.apply(this, [requestUrl, options] as never);
       };
     })(window.fetch);
   }
 
   // implementation of turnstile
-  c.handler = token => {
-    c.t = token;
+  let handleToken: TurnstileCallback | undefined = token => {
+    currentToken = token;
     if (document.forms && document.forms.length > 0) {
-      for (c.fi = 0; c.fi < document.forms.length; c.fi += 1) {
-        c.f = document.forms[c.fi];
-        if (c.f['VAR_FIELD_NAME'] && !c.f['VAR_FIELD_NAME'].cfcVAR_RANDOM) {
+      for (let formIndex = 0; formIndex < document.forms.length; formIndex += 1) {
+        const form = document.forms[formIndex];
+        if (form['VAR_FIELD_NAME'] && !form['VAR_FIELD_NAME'].cfcVAR_RANDOM) {
           continue;
         }
-        if (c.f['VAR_FIELD_NAME']) {
-          c.f['VAR_FIELD_NAME'].value = token;
+        if (form['VAR_FIELD_NAME']) {
+          form['VAR_FIELD_NAME'].value = token;
           continue;
         }
-        if (document.createElement && c.f) {
-          c.i = document.createElement('input');
-          c.i.setAttribute('type', 'hidden');
-          c.i.setAttribute('name', 'VAR_FIELD_NAME');
-          c.i.setAttribute('value', token);
-          c.i.cfcVAR_RANDOM = true;
-          c.f.appendChild(c.i);
-          c.i = undefined;
+        if (form && document.createElement) {
+          const hiddenInput: HTMLInputElement = document.createElement('input');
+          hiddenInput.setAttribute('type', 'hidden');
+          hiddenInput.setAttribute('name', 'VAR_FIELD_NAME');
+          hiddenInput.setAttribute('value', token);
+          hiddenInput.cfcVAR_RANDOM = true;
+          form.appendChild(hiddenInput);
         }
-        c.f = undefined;
       }
     }
   };
 
-  c.init = true;
+  let isInitializationPending: true | undefined = true;
   window.cftshVAR_RANDOM = () => {
-    if (c.init === undefined) {
+    if (isInitializationPending === undefined) {
       return;
     }
-    c.init = undefined;
-    if (typeof turnstile === 'object' && c.handler) {
-      c.w = turnstile.render('#cfcVAR_RANDOM', {
+    isInitializationPending = undefined;
+    if (typeof turnstile === 'object' && handleToken) {
+      widgetId = turnstile.render('#cfcVAR_RANDOM', {
         sitekey: 'VAR_SITE_KEY',
-        callback: c.handler,
+        callback: handleToken,
       });
-      c.handler = undefined;
+      handleToken = undefined;
       window.cftshVAR_RANDOM = undefined;
     }
   };
   if (typeof turnstile === 'object') {
     turnstile.ready(window.cftshVAR_RANDOM);
   }
-})({
-  hosts: 'VAR_HOSTS'.split(','),
-});
+})('VAR_HOSTS'.split(','));
