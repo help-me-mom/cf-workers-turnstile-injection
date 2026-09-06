@@ -1,4 +1,5 @@
 export type TurnstileVerification =
+  | undefined
   | {
       success: true;
       'error-codes': Array<string>; // 'timeout-or-duplicate'
@@ -14,8 +15,7 @@ export type TurnstileVerification =
       success: false;
       'error-codes': Array<string>; // 'timeout-or-duplicate'
       messages: Array<string>;
-    }
-  | undefined;
+    };
 
 /**
  * Extracts Turnstile token from request

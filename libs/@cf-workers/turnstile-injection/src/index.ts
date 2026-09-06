@@ -60,7 +60,7 @@ const matchUrls = (url: string, hosts: Array<string>): boolean => {
     if (v && a && e && e[0] && e[0].charAt(0) !== '.' && a[0] !== e[0]) {
       v = false;
     }
-    if (v && a && e && e[1] && (!a[1] || a[1].indexOf(e[1]) !== 0)) {
+    if (v && a && e && e[1] && (!a[1] || !a[1].startsWith(e[1]))) {
       v = false;
     }
     if (v) {
@@ -131,10 +131,8 @@ export default {
         originRequest.headers.set('X-Turnstile-Data', JSON.stringify(outcome));
         if (outcome && outcome.success) {
           originRequest.headers.set('X-Turnstile-Success', 'yes');
-          originRequest.headers.set(
-            'X-Turnstile-Time',
-            `${Math.floor((Date.now() - Date.parse(outcome.challenge_ts)) / 1e3)}`,
-          );
+          const challengeAgeSeconds = Math.floor((Date.now() - Date.parse(outcome.challenge_ts)) / 1e3);
+          originRequest.headers.set('X-Turnstile-Time', String(challengeAgeSeconds));
         } else {
           originRequest.headers.set('X-Turnstile-Success', 'no');
         }
@@ -243,7 +241,8 @@ export default {
       env.TURNSTILE_SITE_KEY &&
       response.headers.get('content-type')?.split(';', 1)[0].trim().toLowerCase() === 'text/html'
     ) {
-      return new HTMLRewriter().on('head', headHandler).on('body', turnstileHandler).transform(response);
+      const rewriter = new HTMLRewriter();
+      return rewriter.on('head', headHandler).on('body', turnstileHandler).transform(response);
     }
     return response;
   },
