@@ -51,7 +51,7 @@ export const parseTurnstileValue = async (request: Request, fieldName: string): 
   return cfTurnstileResponse;
 };
 
-const validateHost = (hostname: undefined | string, hosts: string): boolean => {
+const isHostAllowed = (hostname: undefined | string, hosts: string): boolean => {
   if (!hosts) {
     return false;
   }
@@ -109,7 +109,7 @@ export const verifyTurnstileValue = async (
     const result = await response.json<TurnstileVerification>();
     console.error('verifyTurnstileValue:result', result);
     if (result && result.success) {
-      return validateHost(result.hostname, hosts)
+      return isHostAllowed(result.hostname, hosts)
         ? result
         : {
             success: false,

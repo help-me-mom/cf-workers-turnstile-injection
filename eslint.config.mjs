@@ -1,18 +1,21 @@
 import js from '@eslint/js';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import { defineConfig } from 'eslint/config';
+import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 import esX from 'eslint-plugin-es-x';
-import importPlugin from 'eslint-plugin-import';
+import { flatConfigs as importConfigs } from 'eslint-plugin-import-x';
 import json from 'eslint-plugin-json';
 import { flat as mdx } from 'eslint-plugin-mdx';
-import preferArrow from 'eslint-plugin-prefer-arrow';
+import preferArrowFunctions from 'eslint-plugin-prefer-arrow-functions';
 import prettier from 'eslint-plugin-prettier/recommended';
-import toml from 'eslint-plugin-toml';
+import { configs as tomlConfigs } from 'eslint-plugin-toml';
 import unicorn from 'eslint-plugin-unicorn';
 import unusedImports from 'eslint-plugin-unused-imports';
-import yml from 'eslint-plugin-yml';
+import { configs as ymlConfigs } from 'eslint-plugin-yml';
 import * as espree from 'espree';
 import globals from 'globals';
+
+const projects = ['./tsconfig.json', './tsconfig.spec.json', './tests-e2e/tsconfig.json'];
 
 export default defineConfig([
   {
@@ -35,30 +38,29 @@ export default defineConfig([
       js.configs.recommended,
       tsPlugin.configs['flat/recommended'],
       unicorn.configs['flat/recommended'],
-      importPlugin.flatConfigs.recommended,
-      importPlugin.flatConfigs.typescript,
+      importConfigs.recommended,
+      importConfigs.typescript,
       prettier,
     ],
     plugins: {
       'es-x': esX,
-      'prefer-arrow': preferArrow,
+      'prefer-arrow-functions': preferArrowFunctions,
       'unused-imports': unusedImports,
     },
     languageOptions: {
       globals: globals.es2024,
       parserOptions: {
-        project: ['./tsconfig.json', './tsconfig.spec.json', './tests-e2e/tsconfig.json'],
+        project: projects,
         tsconfigRootDir: import.meta.dirname,
       },
     },
     settings: {
-      'import/resolver': {
-        webpack: { config: './webpack.config.js' },
-        typescript: {
+      'import-x/resolver-next': [
+        createTypeScriptImportResolver({
           noWarnOnMultipleProjects: true,
-          project: ['./tsconfig.json', './tsconfig.spec.json', './tests-e2e/tsconfig.json'],
-        },
-      },
+          project: projects,
+        }),
+      ],
       'es-x': { aggressive: true },
     },
     rules: {
@@ -101,7 +103,7 @@ export default defineConfig([
       'unicorn/prefer-switch': 'off',
       'unicorn/prefer-top-level-await': 'off',
       'unicorn/prefer-type-error': 'off',
-      'unicorn/prevent-abbreviations': 'off',
+      'unicorn/name-replacements': 'off',
       'es-x/no-array-from': 'error',
       'es-x/no-array-isarray': 'off',
       'es-x/no-array-of': 'error',
@@ -144,7 +146,7 @@ export default defineConfig([
           allowTemplateLiterals: true,
         },
       ],
-      'import/order': [
+      'import-x/order': [
         'error',
         {
           'newlines-between': 'always',
@@ -156,12 +158,23 @@ export default defineConfig([
         },
       ],
       'unused-imports/no-unused-imports': 'error',
-      'prefer-arrow/prefer-arrow-functions': [
+      'prefer-arrow-functions/prefer-arrow-functions': [
         'error',
         {
-          allowStandaloneDeclarations: true,
+          allowNamedFunctions: true,
         },
       ],
+    },
+  },
+  {
+    files: ['libs/@cf-workers/turnstile-injection/src/frontend/index.ts'],
+    rules: {
+      // The injected script must support browsers without startsWith/endsWith.
+      'unicorn/prefer-string-starts-ends-with': 'off',
+      // The fetch wrapper and Turnstile onload callback intentionally modify window.
+      'unicorn/no-global-object-property-assignment': 'off',
+      // The XMLHttpRequest and fetch wrappers must preserve the caller's receiver.
+      'unicorn/no-this-outside-of-class': 'off',
     },
   },
   {
@@ -183,10 +196,6 @@ export default defineConfig([
     },
   },
   {
-    files: ['webpack.config.js'],
-    rules: { 'prefer-arrow/prefer-arrow-functions': 'off' },
-  },
-  {
     files: ['**/*.json'],
     extends: [json.configs.recommended, prettier],
   },
@@ -200,10 +209,10 @@ export default defineConfig([
   },
   {
     files: ['**/*.{yaml,yml}'],
-    extends: [yml.configs['flat/prettier'], prettier],
+    extends: [ymlConfigs['flat/prettier'], prettier],
   },
   {
     files: ['**/*.toml'],
-    extends: [toml.configs['flat/standard']],
+    extends: [tomlConfigs['flat/standard']],
   },
 ]);

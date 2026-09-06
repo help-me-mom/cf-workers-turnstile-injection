@@ -37,7 +37,7 @@ export interface CfWorkersTurnstileInjectionEnv {
   TURNSTILE_LENIENCY: string | undefined;
 }
 
-const matchUrls = (url: string, hosts: Array<string>): boolean => {
+const isUrlMatched = (url: string, hosts: Array<string>): boolean => {
   if (hosts.length < 2 && !hosts[0]) {
     return true;
   }
@@ -53,17 +53,17 @@ const matchUrls = (url: string, hosts: Array<string>): boolean => {
       e = [e[0], e.splice(1).join('/')];
     }
 
-    let v = true;
-    if (v && a && e && e[0] && e[0].charAt(0) === '.' && a[0].indexOf(e[0], a[0].length - e[0].length) === -1) {
-      v = false;
+    let isMatch = true;
+    if (isMatch && a && e && e[0] && e[0].charAt(0) === '.' && a[0].indexOf(e[0], a[0].length - e[0].length) === -1) {
+      isMatch = false;
     }
-    if (v && a && e && e[0] && e[0].charAt(0) !== '.' && a[0] !== e[0]) {
-      v = false;
+    if (isMatch && a && e && e[0] && e[0].charAt(0) !== '.' && a[0] !== e[0]) {
+      isMatch = false;
     }
-    if (v && a && e && e[1] && (!a[1] || a[1].indexOf(e[1]) !== 0)) {
-      v = false;
+    if (isMatch && a && e && e[1] && (!a[1] || !a[1].startsWith(e[1]))) {
+      isMatch = false;
     }
-    if (v) {
+    if (isMatch) {
       return true;
     }
   }
@@ -84,13 +84,13 @@ export default {
       console.error(`TURNSTILE_SECRET_KEY is missing`);
     }
 
-    const envTurnstileInline = env.TURNSTILE_INLINE !== 'no';
+    const isTurnstileInline = env.TURNSTILE_INLINE !== 'no';
     const nonce = crypto.randomUUID();
     const headHandler = new TurnstileHeadHandler(env.TURNSTILE_RANDOM ?? '');
     const turnstileHandler = new TurnstileBodyHandler(
       env.TURNSTILE_SITE_KEY,
       fieldName,
-      envTurnstileInline ? nonce : undefined,
+      isTurnstileInline ? nonce : undefined,
       env.TURNSTILE_RANDOM ?? '',
       env.TURNSTILE_BACKENDS ?? '',
     );
@@ -116,7 +116,7 @@ export default {
       (request.method === 'PUT' || request.method === 'POST') &&
       fieldName &&
       env.TURNSTILE_SECRET_KEY &&
-      matchUrls(request.url, backends)
+      isUrlMatched(request.url, backends)
     ) {
       try {
         const outcome = await verifyTurnstileValue(
@@ -131,10 +131,8 @@ export default {
         originRequest.headers.set('X-Turnstile-Data', JSON.stringify(outcome));
         if (outcome && outcome.success) {
           originRequest.headers.set('X-Turnstile-Success', 'yes');
-          originRequest.headers.set(
-            'X-Turnstile-Time',
-            `${Math.floor((Date.now() - Date.parse(outcome.challenge_ts)) / 1e3)}`,
-          );
+          const challengeAgeSeconds = Math.floor((Date.now() - Date.parse(outcome.challenge_ts)) / 1e3);
+          originRequest.headers.set('X-Turnstile-Time', String(challengeAgeSeconds));
         } else {
           originRequest.headers.set('X-Turnstile-Success', 'no');
         }
@@ -172,7 +170,8 @@ export default {
     if (response.headers.has('content-security-policy')) {
       const csp: Array<string> = [];
       const cspMap: Record<string, string> = {};
-      for (const option of (response.headers.get('content-security-policy') ?? '').split(/[,;]\s*/)) {
+      const cspOptions = (response.headers.get('content-security-policy') ?? '').split(/[,;]\s*/);
+      for (const option of cspOptions) {
         if (option.trim().length === 0) {
           continue;
         }
@@ -214,7 +213,7 @@ export default {
         }
       }
       {
-        if (envTurnstileInline && !(cspMap['script-src'] ?? '').includes(`'nonce-${nonce}'`)) {
+        if (isTurnstileInline && !(cspMap['script-src'] ?? '').includes(`'nonce-${nonce}'`)) {
           const scriptSrc = (cspMap['script-src'] ?? cspMap['default-src'] ?? '').concat(` 'nonce-${nonce}'`).trim();
           if (cspMap['script-src'] === undefined) {
             csp.push('script-src');
@@ -223,7 +222,7 @@ export default {
         }
       }
       {
-        if (!envTurnstileInline && !(cspMap['script-src'] ?? cspMap['default-src'] ?? '').includes(`'self'`)) {
+        if (!isTurnstileInline && !(cspMap['script-src'] ?? cspMap['default-src'] ?? '').includes(`'self'`)) {
           const scriptSrc = (cspMap['script-src'] ?? cspMap['default-src'] ?? '').concat(` 'self'`).trim();
           if (cspMap['script-src'] === undefined) {
             csp.push('script-src');
@@ -241,7 +240,7 @@ export default {
     if (
       fieldName &&
       env.TURNSTILE_SITE_KEY &&
-      response.headers.get('content-type')?.split(';')[0].trim().toLowerCase() === 'text/html'
+      response.headers.get('content-type')?.split(';', 1)[0].trim().toLowerCase() === 'text/html'
     ) {
       return new HTMLRewriter().on('head', headHandler).on('body', turnstileHandler).transform(response);
     }
