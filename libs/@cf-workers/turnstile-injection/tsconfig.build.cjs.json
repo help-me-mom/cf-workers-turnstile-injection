@@ -7,7 +7,7 @@
     // ES5 output and downlevel iteration are required for legacy consumers.
     "ignoreDeprecations": "6.0",
     "moduleResolution": "bundler",
-    "types": ["@cloudflare/workers-types/2023-07-01"],
+    "types": ["@cloudflare/workers-types"],
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
