@@ -112,7 +112,7 @@ declare const turnstile: undefined | Turnstile;
     c.d = undefined;
 
     // JSON
-    if (!c.d && c.t && typeof d === 'string' && typeof JSON !== 'undefined' && d.charAt(0) === '{') {
+    if (typeof d === 'string' && typeof JSON !== 'undefined' && !c.d && c.t && d.charAt(0) === '{') {
       try {
         (p => {
           if (p['VAR_FIELD_NAME']) {
@@ -127,7 +127,7 @@ declare const turnstile: undefined | Turnstile;
     }
 
     // query string
-    if (!c.d && c.t && typeof d === 'string' && d.charAt(0) !== '<' && d.indexOf('=') !== -1) {
+    if (typeof d === 'string' && !c.d && c.t && d.charAt(0) !== '<' && d.indexOf('=') !== -1) {
       c.d = d + '&VAR_FIELD_NAME=' + encodeURIComponent(c.t);
     }
 
@@ -139,7 +139,7 @@ declare const turnstile: undefined | Turnstile;
       c.d = d;
     }
 
-    if (c.d && c.w && typeof turnstile === 'object') {
+    if (typeof turnstile === 'object' && c.d && c.w) {
       turnstile.reset(c.w);
     }
 
