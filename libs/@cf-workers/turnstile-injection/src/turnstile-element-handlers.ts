@@ -35,7 +35,6 @@ export class TurnstileBodyHandler implements HTMLRewriterElementContentHandlers 
     public readonly hosts: string,
   ) {}
 
-  // eslint-disable-next-line max-lines-per-function
   script(): string {
     return (frontendTsScript as string)
       .replaceAll(/VAR_(HOSTS|RANDOM|FIELD_NAME|SITE_KEY)/gm, value => {
