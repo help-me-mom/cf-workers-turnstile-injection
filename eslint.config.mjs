@@ -174,6 +174,10 @@ export default defineConfig([
   {
     files: ['libs/@cf-workers/turnstile-injection/src/frontend/index.ts'],
     rules: {
+      // The injected script must support browsers without startsWith/endsWith.
+      'unicorn/prefer-string-starts-ends-with': 'off',
+      // The fetch wrapper and Turnstile onload callback intentionally modify window.
+      'unicorn/no-global-object-property-assignment': 'off',
       // The XMLHttpRequest and fetch wrappers must preserve the caller's receiver.
       'unicorn/no-this-outside-of-class': 'off',
     },

@@ -54,7 +54,7 @@ declare const turnstile: undefined | Turnstile;
             : '';
 
     return ((result: Array<string>) => {
-      result = url.split(':/' + '/', 2) as [string] | [string, string];
+      result = url.split('://', 2) as [string] | [string, string];
       result = (result[1] || result[0] || '').split('/');
       if (!result[0]) {
         result[0] = location.hostname;
@@ -105,7 +105,6 @@ declare const turnstile: undefined | Turnstile;
     })({});
   };
   c.patch = (d, u) => {
-    // eslint-disable-next-line unicorn/prefer-regexp-test
     if (typeof d === 'undefined' || !c.match || !c.match(u)) {
       return d;
     }
@@ -116,10 +115,11 @@ declare const turnstile: undefined | Turnstile;
     if (!c.d && c.t && typeof d === 'string' && typeof JSON !== 'undefined' && d.charAt(0) === '{') {
       try {
         (p => {
-          if (!p['VAR_FIELD_NAME']) {
-            p['VAR_FIELD_NAME'] = c.t;
-            c.d = JSON.stringify(p);
+          if (p['VAR_FIELD_NAME']) {
+            return;
           }
+          p['VAR_FIELD_NAME'] = c.t;
+          c.d = JSON.stringify(p);
         })(JSON.parse(d));
       } catch {
         // nothing to do
