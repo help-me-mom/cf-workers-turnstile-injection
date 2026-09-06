@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": ["jasmine", "@cloudflare/workers-types/2023-07-01"]
+    "types": ["jasmine", "@cloudflare/workers-types"]
   },
   "include": ["tests/**/*.ts"]
 }

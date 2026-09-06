@@ -1,14 +1,11 @@
 {
   "extends": "./libs/@cf-workers/turnstile-injection/tsconfig.json",
   "compilerOptions": {
-    "target": "es2021",
-    "module": "es2022",
     "isolatedModules": true,
     "rootDir": ".",
     "paths": {
       "@cf-workers/turnstile-injection": ["./libs/@cf-workers/turnstile-injection/src/index.ts"]
-    },
-    "types": ["@cloudflare/workers-types/2023-07-01"]
+    }
   },
   "files": ["libs/@cf-workers/turnstile-injection/src/index.ts"],
   "exclude": ["node_modules"]

@@ -8,6 +8,9 @@ The library provides a simple [Workers script](https://workers.cloudflare.com)
 which not only validates Turnstile resolves, but also injects javascript on html pages and attaches Turnstile responses
 to forms, api requests (via `XMLHttpRequest` / `fetch`) without extra coding.
 
+The injected JavaScript requires ES2015 (ES6) support. Turnstile also requires a
+[supported browser](https://developers.cloudflare.com/cloudflare-challenges/reference/supported-browsers/).
+
 By default, the library will add 2 headers to your origin:
 
 - `X-Turnstile-Success` can be `yes` or `no`, and represents whether Turnstile has been solved successfully
@@ -242,6 +245,12 @@ If you want to be very precise and load the script on specific pages and api end
 Routes can cover wider routes than
 [`TURNSTILE_FRONTENDS`](#turnstile_frontends) and [`TURNSTILE_BACKENDS`](#turnstile_backends) accept,
 that's fine.
+
+## Development
+
+`npm run build` uses TypeScript 7 to compile JavaScript and declarations, then webpack to bundle and minify the output.
+`npm run ts:check` also uses TypeScript 7. The `typescript` dependency provides Microsoft's TypeScript 6 compatibility API
+for ESLint and other development tools; `@typescript/native` provides the TypeScript 7 compiler.
 
 ## Help
 

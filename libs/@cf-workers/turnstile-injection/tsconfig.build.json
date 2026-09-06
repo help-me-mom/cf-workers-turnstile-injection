@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../../tmp/libs/@cf-workers/turnstile-injection",
+    "declaration": true,
+    "removeComments": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "noEmitOnError": true
+  }
+}
