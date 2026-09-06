@@ -1,6 +1,5 @@
 .dockerignore
 .editorconfig
-.eslintignore
 .gitignore
 .prettierignore
 CHANGELOG.md
