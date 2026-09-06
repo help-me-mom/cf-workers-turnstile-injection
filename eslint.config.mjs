@@ -103,7 +103,7 @@ export default defineConfig([
       'unicorn/prefer-switch': 'off',
       'unicorn/prefer-top-level-await': 'off',
       'unicorn/prefer-type-error': 'off',
-      'unicorn/prevent-abbreviations': 'off',
+      'unicorn/name-replacements': 'off',
       'es-x/no-array-from': 'error',
       'es-x/no-array-isarray': 'off',
       'es-x/no-array-of': 'error',
