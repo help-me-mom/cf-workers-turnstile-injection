@@ -62,8 +62,7 @@ import type { CfWorkersTurnstileInjectionEnv } from '@cf-workers/turnstile-injec
 if you have `interface Env`, it should extend `CfWorkersTurnstileInjectionEnv`:
 
 ```ts
-interface Env
-  extends CfWorkersTurnstileInjectionEnv {
+interface Env extends CfWorkersTurnstileInjectionEnv {
   // ...
 }
 ```
