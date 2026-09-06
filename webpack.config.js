@@ -14,13 +14,15 @@ const typescriptCompiler = path.join(path.dirname(require.resolve('@typescript/n
 
 const typescriptPlugin = {
   apply: compiler => {
-    compiler.hooks.beforeCompile.tap('TypeScript', () => {
+    compiler.hooks.thisCompilation.tap('TypeScript', compilation => {
       const changedFiles = [...(compiler.modifiedFiles ?? []), ...(compiler.removedFiles ?? [])];
       if (!compiler.modifiedFiles || changedFiles.some(file => file.startsWith(sourceRoot + path.sep))) {
-        execFileSync(process.execPath, [typescriptCompiler, '--project', buildConfig], { stdio: 'inherit' });
+        try {
+          execFileSync(process.execPath, [typescriptCompiler, '--project', buildConfig], { stdio: 'inherit' });
+        } catch (error) {
+          compilation.errors.push(error);
+        }
       }
-    });
-    compiler.hooks.afterCompile.tap('TypeScript', compilation => {
       compilation.contextDependencies.add(path.join(sourceRoot, 'src'));
       compilation.fileDependencies.add(buildConfig);
       compilation.fileDependencies.add(path.join(sourceRoot, 'tsconfig.json'));
