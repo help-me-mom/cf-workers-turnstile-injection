@@ -1,11 +1,48 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const path = require('node:path');
 
+const { minify_sync: minify } = require('terser');
+const ts = require('typescript');
 const { DefinePlugin } = require('webpack');
+
+const frontendRoot = path.resolve(__dirname, './libs/@cf-workers/turnstile-injection');
+const frontendFile = path.join(frontendRoot, 'src/frontend/index.ts');
+const frontendConfig = path.join(frontendRoot, 'tsconfig.build.web.json');
 
 const variables = {
   WEBPACK_BUILD_VERSION: JSON.stringify(process.env.BUILD_VERSION || '0.0.0'),
+  WEBPACK_FRONTEND_SCRIPT: DefinePlugin.runtimeValue(() => {
+    const { options, errors } = ts.getParsedCommandLineOfConfigFile(frontendConfig, {}, ts.sys);
+    if (errors.length > 0) {
+      throw new Error(errors.map(error => ts.flattenDiagnosticMessageText(error.messageText, '\n')).join('\n'));
+    }
+    const { outputText } = ts.transpileModule(ts.sys.readFile(frontendFile), { compilerOptions: options });
+    const { code } = minify(outputText, {
+      ecma: 5,
+      ie8: true,
+      // Field names are substituted later and may contain hyphens.
+      compress: { properties: false },
+      mangle: true,
+      format: { ascii_only: true, comments: false },
+    });
+    return JSON.stringify(code);
+  }, [frontendFile, frontendConfig, path.join(frontendRoot, 'tsconfig.build.cjs.json')]),
 };
+
+const createTypescriptRules = configFile => [
+  {
+    test: /\.tsx?$/,
+    use: [
+      {
+        loader: 'ts-loader',
+        options: {
+          configFile: path.resolve(__dirname, configFile),
+          transpileOnly: true,
+        },
+      },
+    ],
+  },
+];
 
 module.exports = [
   {
@@ -23,20 +60,7 @@ module.exports = [
     },
     plugins: [new DefinePlugin(variables)],
     module: {
-      rules: [
-        {
-          test: /\.tsx?$/,
-          use: [
-            {
-              loader: 'ts-loader',
-              options: {
-                configFile: path.resolve(__dirname, './libs/@cf-workers/turnstile-injection/tsconfig.build.cjs.json'),
-                transpileOnly: true,
-              },
-            },
-          ],
-        },
-      ],
+      rules: createTypescriptRules('./libs/@cf-workers/turnstile-injection/tsconfig.build.cjs.json'),
     },
     resolve: {
       extensions: ['.js', '.cjs', '.mjs', '.ts', '.json'],
@@ -60,20 +84,7 @@ module.exports = [
     },
     plugins: [new DefinePlugin(variables)],
     module: {
-      rules: [
-        {
-          test: /\.tsx?$/,
-          use: [
-            {
-              loader: 'ts-loader',
-              options: {
-                configFile: path.resolve(__dirname, './libs/@cf-workers/turnstile-injection/tsconfig.build.mjs.json'),
-                transpileOnly: true,
-              },
-            },
-          ],
-        },
-      ],
+      rules: createTypescriptRules('./libs/@cf-workers/turnstile-injection/tsconfig.build.mjs.json'),
     },
     resolve: {
       extensions: ['.js', '.cjs', '.mjs', '.ts', '.json'],
