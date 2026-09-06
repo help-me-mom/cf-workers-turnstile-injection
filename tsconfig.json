@@ -1,8 +1,6 @@
 {
   "extends": "./libs/@cf-workers/turnstile-injection/tsconfig.json",
   "compilerOptions": {
-    "target": "es2021",
-    "module": "es2022",
     "isolatedModules": true,
     "rootDir": ".",
     "paths": {

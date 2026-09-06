@@ -11,6 +11,7 @@ renovate.json
 dist/
 node_modules/
 test-reports/
+tmp/
 
 **/*.sh
 **/.nvmrc

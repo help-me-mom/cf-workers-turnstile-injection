@@ -29,6 +29,7 @@ export default defineConfig([
       'dist/**',
       '**/node_modules/**',
       'test-reports/**',
+      'tmp/**',
       '**/*.sh',
     ],
   },

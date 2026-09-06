@@ -1,58 +1,56 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
+const { execFileSync } = require('node:child_process');
+const { readFileSync } = require('node:fs');
 const path = require('node:path');
 
 const { minify_sync: minify } = require('terser');
-const ts = require('typescript');
 const { DefinePlugin } = require('webpack');
 
-const frontendRoot = path.resolve(__dirname, './libs/@cf-workers/turnstile-injection');
-const frontendFile = path.join(frontendRoot, 'src/frontend/index.ts');
-const frontendConfig = path.join(frontendRoot, 'tsconfig.build.web.json');
+const sourceRoot = path.resolve(__dirname, './libs/@cf-workers/turnstile-injection');
+const buildRoot = path.resolve(__dirname, './tmp/libs/@cf-workers/turnstile-injection');
+const buildConfig = path.join(sourceRoot, 'tsconfig.build.json');
+const frontendFile = path.join(buildRoot, 'frontend/index.js');
+const typescriptCompiler = path.join(path.dirname(require.resolve('@typescript/native/package.json')), 'bin/tsc');
+
+const typescriptPlugin = {
+  apply: compiler => {
+    compiler.hooks.thisCompilation.tap('TypeScript', compilation => {
+      const changedFiles = [...(compiler.modifiedFiles ?? []), ...(compiler.removedFiles ?? [])];
+      if (!compiler.modifiedFiles || changedFiles.some(file => file.startsWith(sourceRoot + path.sep))) {
+        try {
+          execFileSync(process.execPath, [typescriptCompiler, '--project', buildConfig], { stdio: 'inherit' });
+        } catch (error) {
+          compilation.errors.push(error);
+        }
+      }
+      compilation.contextDependencies.add(path.join(sourceRoot, 'src'));
+      compilation.fileDependencies.add(buildConfig);
+      compilation.fileDependencies.add(path.join(sourceRoot, 'tsconfig.json'));
+    });
+  },
+};
 
 const variables = {
   WEBPACK_BUILD_VERSION: JSON.stringify(process.env.BUILD_VERSION || '0.0.0'),
   WEBPACK_FRONTEND_SCRIPT: DefinePlugin.runtimeValue(() => {
-    const { options, errors } = ts.getParsedCommandLineOfConfigFile(frontendConfig, {}, ts.sys);
-    if (errors.length > 0) {
-      throw new Error(errors.map(error => ts.flattenDiagnosticMessageText(error.messageText, '\n')).join('\n'));
-    }
-    const { outputText } = ts.transpileModule(ts.sys.readFile(frontendFile), {
-      fileName: frontendFile,
-      compilerOptions: options,
-    });
-    const { code } = minify(outputText, {
-      ecma: 5,
-      ie8: true,
+    const { code } = minify(readFileSync(frontendFile, 'utf8'), {
+      ecma: 2015,
       // Field names are substituted later and may contain hyphens.
       compress: { properties: false },
       mangle: true,
       format: { ascii_only: true, comments: false },
     });
     return JSON.stringify(code);
-  }, [frontendFile, frontendConfig, path.join(frontendRoot, 'tsconfig.build.cjs.json')]),
+  }, [frontendFile]),
 };
-
-const createTypescriptRules = configFile => [
-  {
-    test: /\.tsx?$/,
-    use: [
-      {
-        loader: 'ts-loader',
-        options: {
-          configFile: path.resolve(__dirname, configFile),
-          transpileOnly: true,
-        },
-      },
-    ],
-  },
-];
 
 module.exports = [
   {
+    name: 'commonjs',
     mode: process.env.MODE || 'production',
     devtool: process.env.MODE ? false : 'source-map',
-    entry: './libs/@cf-workers/turnstile-injection/src/index.ts',
-    target: ['web', 'es3'],
+    entry: path.join(buildRoot, 'index.js'),
+    target: ['web', 'es2015'],
     output: {
       path: path.resolve(__dirname, './dist/libs/@cf-workers/turnstile-injection/'),
       filename: 'index.js',
@@ -61,19 +59,18 @@ module.exports = [
       },
       globalObject: 'this',
     },
-    plugins: [new DefinePlugin(variables)],
+    plugins: [typescriptPlugin, new DefinePlugin(variables)],
     module: {
-      rules: createTypescriptRules('./libs/@cf-workers/turnstile-injection/tsconfig.build.cjs.json'),
-    },
-    resolve: {
-      extensions: ['.js', '.cjs', '.mjs', '.ts', '.json'],
+      rules: [{ test: /\.js$/, extractSourceMap: true }],
     },
   },
   {
+    name: 'module',
+    dependencies: ['commonjs'],
     mode: process.env.MODE || 'production',
     devtool: process.env.MODE ? false : 'source-map',
-    entry: './libs/@cf-workers/turnstile-injection/src/index.ts',
-    target: ['web', 'es2021'],
+    entry: path.join(buildRoot, 'index.js'),
+    target: ['web', 'es2015'],
     experiments: {
       outputModule: true,
     },
@@ -87,10 +84,7 @@ module.exports = [
     },
     plugins: [new DefinePlugin(variables)],
     module: {
-      rules: createTypescriptRules('./libs/@cf-workers/turnstile-injection/tsconfig.build.mjs.json'),
-    },
-    resolve: {
-      extensions: ['.js', '.cjs', '.mjs', '.ts', '.json'],
+      rules: [{ test: /\.js$/, extractSourceMap: true }],
     },
   },
 ];
