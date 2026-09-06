@@ -1,11 +1,12 @@
 import js from '@eslint/js';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import { defineConfig } from 'eslint/config';
+import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 import esX from 'eslint-plugin-es-x';
-import importPlugin from 'eslint-plugin-import';
+import { flatConfigs as importConfigs } from 'eslint-plugin-import-x';
 import json from 'eslint-plugin-json';
 import { flat as mdx } from 'eslint-plugin-mdx';
-import preferArrow from 'eslint-plugin-prefer-arrow';
+import preferArrowFunctions from 'eslint-plugin-prefer-arrow-functions';
 import prettier from 'eslint-plugin-prettier/recommended';
 import { configs as tomlConfigs } from 'eslint-plugin-toml';
 import unicorn from 'eslint-plugin-unicorn';
@@ -13,6 +14,12 @@ import unusedImports from 'eslint-plugin-unused-imports';
 import { configs as ymlConfigs } from 'eslint-plugin-yml';
 import * as espree from 'espree';
 import globals from 'globals';
+
+const projects = ['./tsconfig.json', './tsconfig.spec.json', './tests-e2e/tsconfig.json'];
+const typescriptResolver = createTypeScriptImportResolver({
+  noWarnOnMultipleProjects: true,
+  project: projects,
+});
 
 export default defineConfig([
   {
@@ -35,30 +42,30 @@ export default defineConfig([
       js.configs.recommended,
       tsPlugin.configs['flat/recommended'],
       unicorn.configs['flat/recommended'],
-      importPlugin.flatConfigs.recommended,
-      importPlugin.flatConfigs.typescript,
+      importConfigs.recommended,
+      importConfigs.typescript,
       prettier,
     ],
     plugins: {
       'es-x': esX,
-      'prefer-arrow': preferArrow,
+      'prefer-arrow-functions': preferArrowFunctions,
       'unused-imports': unusedImports,
     },
     languageOptions: {
       globals: globals.es2024,
       parserOptions: {
-        project: ['./tsconfig.json', './tsconfig.spec.json', './tests-e2e/tsconfig.json'],
+        project: projects,
         tsconfigRootDir: import.meta.dirname,
       },
     },
     settings: {
-      'import/resolver': {
-        webpack: { config: './webpack.config.js' },
-        typescript: {
-          noWarnOnMultipleProjects: true,
-          project: ['./tsconfig.json', './tsconfig.spec.json', './tests-e2e/tsconfig.json'],
+      'import-x/resolver-next': [
+        {
+          ...typescriptResolver,
+          // Resolve the resource after webpack's inline loader chain.
+          resolve: (source, file) => typescriptResolver.resolve(source.replace(/^.*!/, ''), file),
         },
-      },
+      ],
       'es-x': { aggressive: true },
     },
     rules: {
@@ -144,7 +151,7 @@ export default defineConfig([
           allowTemplateLiterals: true,
         },
       ],
-      'import/order': [
+      'import-x/order': [
         'error',
         {
           'newlines-between': 'always',
@@ -156,10 +163,10 @@ export default defineConfig([
         },
       ],
       'unused-imports/no-unused-imports': 'error',
-      'prefer-arrow/prefer-arrow-functions': [
+      'prefer-arrow-functions/prefer-arrow-functions': [
         'error',
         {
-          allowStandaloneDeclarations: true,
+          allowNamedFunctions: true,
         },
       ],
     },
@@ -188,10 +195,6 @@ export default defineConfig([
       ecmaVersion: 'latest',
       globals: globals.node,
     },
-  },
-  {
-    files: ['webpack.config.js'],
-    rules: { 'prefer-arrow/prefer-arrow-functions': 'off' },
   },
   {
     files: ['**/*.json'],
