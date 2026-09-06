@@ -7,10 +7,10 @@ import json from 'eslint-plugin-json';
 import { flat as mdx } from 'eslint-plugin-mdx';
 import preferArrow from 'eslint-plugin-prefer-arrow';
 import prettier from 'eslint-plugin-prettier/recommended';
-import toml from 'eslint-plugin-toml';
+import { configs as tomlConfigs } from 'eslint-plugin-toml';
 import unicorn from 'eslint-plugin-unicorn';
 import unusedImports from 'eslint-plugin-unused-imports';
-import yml from 'eslint-plugin-yml';
+import { configs as ymlConfigs } from 'eslint-plugin-yml';
 import * as espree from 'espree';
 import globals from 'globals';
 
@@ -165,6 +165,13 @@ export default defineConfig([
     },
   },
   {
+    files: ['libs/@cf-workers/turnstile-injection/src/frontend/index.ts'],
+    rules: {
+      // The XMLHttpRequest and fetch wrappers must preserve the caller's receiver.
+      'unicorn/no-this-outside-of-class': 'off',
+    },
+  },
+  {
     files: ['**/*.spec.ts'],
     rules: {
       'max-lines': 'off',
@@ -200,10 +207,10 @@ export default defineConfig([
   },
   {
     files: ['**/*.{yaml,yml}'],
-    extends: [yml.configs['flat/prettier'], prettier],
+    extends: [ymlConfigs['flat/prettier'], prettier],
   },
   {
     files: ['**/*.toml'],
-    extends: [toml.configs['flat/standard']],
+    extends: [tomlConfigs['flat/standard']],
   },
 ]);
