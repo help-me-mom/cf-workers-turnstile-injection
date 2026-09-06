@@ -241,7 +241,7 @@ export default {
     if (
       fieldName &&
       env.TURNSTILE_SITE_KEY &&
-      response.headers.get('content-type')?.split(';')[0].trim().toLowerCase() === 'text/html'
+      response.headers.get('content-type')?.split(';', 1)[0].trim().toLowerCase() === 'text/html'
     ) {
       return new HTMLRewriter().on('head', headHandler).on('body', turnstileHandler).transform(response);
     }
