@@ -1,6 +1,5 @@
-import frontendScript from './frontend?raw';
-
 declare const WEBPACK_BUILD_VERSION: string;
+declare const WEBPACK_FRONTEND_SCRIPT: string;
 
 export class TurnstileHeadHandler implements HTMLRewriterElementContentHandlers {
   private processed = false;
@@ -34,7 +33,7 @@ export class TurnstileBodyHandler implements HTMLRewriterElementContentHandlers 
   ) {}
 
   script(): string {
-    return frontendScript.replaceAll(/VAR_(HOSTS|RANDOM|FIELD_NAME|SITE_KEY)/gm, value => {
+    return WEBPACK_FRONTEND_SCRIPT.replaceAll(/VAR_(HOSTS|RANDOM|FIELD_NAME|SITE_KEY)/gm, value => {
       switch (value) {
         case 'VAR_HOSTS': {
           return this.hosts ?? '';
