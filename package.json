@@ -48,7 +48,7 @@
     "husky": "9.1.7",
     "lint-staged": "17.5.1",
     "npm": "11.20.0",
-    "prettier": "3.9.8",
+    "prettier": "3.9.9",
     "prettier-plugin-toml": "2.0.6",
     "semantic-release": "25.0.9",
     "terser": "5.51.2",
