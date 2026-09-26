@@ -46,7 +46,7 @@
     "espree": "11.2.0",
     "globals": "17.12.0",
     "husky": "9.1.7",
-    "lint-staged": "17.5.1",
+    "lint-staged": "17.6.0",
     "npm": "12.1.0",
     "prettier": "3.9.9",
     "prettier-plugin-toml": "2.0.6",
