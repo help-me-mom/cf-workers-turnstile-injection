@@ -47,7 +47,7 @@
     "globals": "17.13.0",
     "husky": "9.1.7",
     "lint-staged": "17.6.0",
-    "npm": "12.1.0",
+    "npm": "12.2.0",
     "prettier": "3.9.9",
     "prettier-plugin-toml": "2.0.6",
     "semantic-release": "25.0.9",
@@ -57,7 +57,7 @@
     "webpack-cli": "7.2.3"
   },
   "engines": {
-    "npm": "12.1.0"
+    "npm": "12.2.0"
   },
   "repository": {
     "type": "git",
