@@ -8,7 +8,7 @@ parameters:
 executors:
   core:
     docker:
-      - image: satantime/puppeteer-node:26.12.1
+      - image: satantime/puppeteer-node:26.13.1
     resource_class: medium
 
 jobs:
