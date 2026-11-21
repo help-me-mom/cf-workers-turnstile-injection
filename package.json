@@ -51,7 +51,7 @@
     "prettier": "3.10.1",
     "prettier-plugin-toml": "2.0.6",
     "semantic-release": "25.0.9",
-    "terser": "5.51.2",
+    "terser": "5.51.4",
     "typescript": "npm:@typescript/typescript6@6.0.2",
     "webpack": "5.112.2",
     "webpack-cli": "7.3.1"
