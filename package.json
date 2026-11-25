@@ -50,7 +50,7 @@
     "npm": "12.1.0",
     "prettier": "3.10.1",
     "prettier-plugin-toml": "2.0.6",
-    "semantic-release": "25.0.9",
+    "semantic-release": "26.0.1",
     "terser": "5.51.4",
     "typescript": "npm:@typescript/typescript6@6.0.2",
     "webpack": "5.113.0",
